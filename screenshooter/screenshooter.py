@@ -22,9 +22,15 @@ All the while... trying to maxmize the screenshot quality behind-the-scenes-like
  :Updated: 07.28.2019
 
 """
+from docopt import docopt
+
 import subprocess
+import datetime
 from typing import List
-from config import INPUT_FPS
+from config import INPUT_FPS, OVERWRITE_OUTPUT
+from pathlib import Path, PurePath
+
+BASE_DIR = Path(__file__).resolve().parent.parent
 
 
 class shooter:
@@ -111,17 +117,32 @@ class shooter:
         return file
 
 
+def make_output_dir(fileName):
+
+    OUTPUT_DIR = BASE_DIR.joinpath("output")
+    new_dir = OUTPUT_DIR.joinpath(fileName)
+
+    try:
+        Path.mkdir(new_dir)
+        OUTPUT_DIR = OUTPUT_DIR.joinpath(fileName)
+
+    except FileNotFoundError as e:
+        print("A missing parent folder - problem in the path.")
+        exit(e)
+
+    except FileExistsError as e:
+        print("The file already exists")
+
+        if OVERWRITE_OUTPUT:
+            Path.mkdir(new_dir, exist_ok=True)
+            OUTPUT_DIR = OUTPUT_DIR.joinpath(fileName)
+        else:
+            exit(e)
+
+    return OUTPUT_DIR
+
+
 if __name__ == "__main__":
-
-    from docopt import docopt
-
     args = docopt(__doc__)
-
-    from pathlib import Path, PurePath
-
-    from path_handler import make_output_dir
-
     ses = shooter()
-
     ses.main()
-
