@@ -27,7 +27,6 @@ from docopt import docopt
 import subprocess
 import datetime
 from typing import List
-from config import INPUT_FPS, OVERWRITE_OUTPUT
 from pathlib import Path, PurePath
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -35,8 +34,6 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 class shooter:
     def __init__(self):
-        from pathlib import Path, PurePath
-
         self.BASE_DIR = Path(__file__).resolve().parent.parent
         self.INPUT_VID = self.vidInput(args["FILE"])
         self.fileName = PurePath(self.INPUT_VID).stem
@@ -47,7 +44,8 @@ class shooter:
 
         OUTPUT_DIR = make_output_dir(self.fileName)
 
-        ouput_str = str(OUTPUT_DIR.joinpath(f"{self.fileName}_Screenshot-%04d.jpg"))
+        ouput_str = str(OUTPUT_DIR.joinpath(
+            f"{self.fileName}_Screenshot-%04d.jpg"))
 
         cmd: List[str] = [
             "ffmpeg",
@@ -109,12 +107,6 @@ class shooter:
         print(f"\n      ↪  {INPUT_VID}\n")
 
         return INPUT_VID
-
-    def cli(self):
-        pass
-
-    def vidIn(self, file):
-        return file
 
 
 def make_output_dir(fileName):
