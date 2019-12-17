@@ -19,17 +19,41 @@ All the while... trying to maxmize the screenshot quality behind-the-scenes-like
 
 🎃____________________🎃
  :Python: >= python 3.6
- :Updated: 07.28.2019
+ :Updated: 10.30.2019
 
 """
-from docopt import docopt
 
+# from docopt import docopt
+import argparse
 import subprocess
 import datetime
 from typing import List
 from pathlib import Path, PurePath
 
+# _________________________ Logging setup  _________________________
+import sys
+from loguru import logger
+
+# For scripts
+config = {
+    "handlers": [
+        {"sink": sys.stdout, "format": "{time:YYYY-MM-DD at HH:mm:ss} | {level} | {message}"},
+        {"sink": "screenshooter.log",
+            "format": "{time:YYYY-MM-DD at HH:mm:ss} | {level} | {message}"},
+    ],
+    "extra": {"user": "someone"}
+}
+logger.configure(**config)
+
+# For libraries
+logger.disable("my_library")
+logger.info("No matter added sinks, this message is not displayed")
+logger.enable("my_library")
+logger.info("This message however is propagated to the sinks")
+
+
 BASE_DIR = Path(__file__).resolve().parent.parent
+
 
 
 class shooter:
@@ -39,8 +63,7 @@ class shooter:
         self.fileName = PurePath(self.INPUT_VID).stem
 
     def main(self):
-        print("\n🚀\n...\nHere we go\n...\n")
-        print("⏳\n")
+        logger.info("\n🚀\n...\nHere we go\n...\n")
 
         OUTPUT_DIR = make_output_dir(self.fileName)
 
@@ -135,6 +158,6 @@ def make_output_dir(fileName):
 
 
 if __name__ == "__main__":
-    args = docopt(__doc__)
+    # args = docopt(__doc__)
     ses = shooter()
     ses.main()
