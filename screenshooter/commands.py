@@ -1,5 +1,62 @@
+# ================================================================== #
+# _________________________    Imports     _________________________ #
+# ================================================================== #
+# ======            ====== #
+# ======  Built-in  ====== #
+# ======            ====== #
+from pprint import pprint
+
+# ======            ====== #
+# ======    Local   ====== #
+# ======            ====== #
+
+# ======            ====== #
+# ======    PyPi    ====== #
+# ======            ====== #
 import subprocess
 from loguru import logger
+from pymediainfo import MediaInfo
+
+
+# ================================================================== #
+# _________________________   Commands     _________________________ #
+# ================================================================== #
+
+#   Get Video info
+#
+#
+
+
+def get_video_info(video):
+    for track in MediaInfo.parse(video).tracks:
+        if track.track_type == "Video":
+            logger.info(f"Video Bit rate: {track.bit_rate}")
+            logger.info(f"Video Frame rate: {track.frame_rate}")
+            logger.info(f"Video Format: {track.format}")
+            logger.info(f"Video Duration: {track.other_duration[4]}")
+        elif track.track_type == "Audio":
+            logger.info("Audio Track data:")
+            pprint(track.to_data())
+
+
+# DECIMATE
+#
+# ffmpeg -i {FILE} -vf mpdecimate,setpts=N/FRAME_RATE/TB -an {OUT}
+
+
+def decimate(input_video, output=None):
+    """Remove the "Dead frames" (duplicate frames) in a video
+
+    Args:
+        input_video ([type]): [description]
+    """
+
+    if output is None:
+        output = f"converted-{input_video}"
+    print(input_video)
+
+    cmd = f"ffmpeg -i {input_video} -vf mpdecimate,setpts=N/FRAME_RATE/TB -an {output}"
+    cmd()
 
 
 def get_codecs():

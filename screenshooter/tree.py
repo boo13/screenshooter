@@ -76,15 +76,11 @@ class _TreeGenerator:
         for index, entry in enumerate(entries):
             connector = ELBOW if index == entries_count - 1 else TEE
             if entry.is_dir():
-                self._add_directory(
-                    entry, index, entries_count, prefix, connector
-                )
+                self._add_directory(entry, index, entries_count, prefix, connector)
             else:
                 self._add_file(entry, prefix, connector)
 
-    def _add_directory(
-        self, directory, index, entries_count, prefix, connector
-    ):
+    def _add_directory(self, directory, index, entries_count, prefix, connector):
         self._tree.append(f"{prefix}{connector} {directory.name}{os.sep}")
         if index != entries_count - 1:
             prefix += PIPE_PREFIX
