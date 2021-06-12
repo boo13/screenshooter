@@ -1,2 +1,1 @@
-__email__ = "boo13bot@gmail.com"
-__author__ = "👻"
+__version__ = "2.0.0"

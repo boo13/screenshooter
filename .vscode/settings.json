@@ -1,6 +1,21 @@
 {
-    "python.pythonPath": "venv/bin/python",
-    "python.linting.pylintEnabled": true,
+    "python.pythonPath": "/Users/randycounsman/Library/Caches/pypoetry/virtualenvs/screenshooter-Mzh_3qix-py3.9",
+    "python.formatting.provider": "black",
+    "python.testing.pytestArgs": [
+        "tests"
+    ],
+    "python.testing.unittestEnabled": false,
+    "python.testing.nosetestsEnabled": false,
+    "python.testing.pytestEnabled": true,
+    "files.exclude": {
+        "**/.git": true,
+        "**/.svn": true,
+        "**/.hg": true,
+        "**/CVS": true,
+        "**/.DS_Store": true,
+        "**/.pytest_cache": true,
+        "**/__pycache__": true
+    },
+    "python.linting.flake8Enabled": true,
     "python.linting.enabled": true,
-    "python.formatting.provider": "black"
 }

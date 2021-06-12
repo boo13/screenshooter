@@ -1,0 +1,29 @@
+[tool.poetry]
+name = "screenshooter"
+version = "2.0.0"
+description = "🐍(python) takes 🎬(video) from 📥(input) 📂(folder) and makes 📸 🎆🎇🌅🌄🌆🌇🌉🌌🌠(screenshots). All the while... trying to maxmize the screenshot quality behind-the-scenes-like."
+authors = ["boo 13 <boo13bot@gmail.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.8"
+click = "^8.0.1"
+loguru = "^0.5.3"
+numpy = "^1.20.3"
+pymediainfo = "^5.1.0"
+click-config-file = "^0.6.0"
+opencv-python = "^4.5.2"
+single-source = "^0.2.0"
+
+[tool.poetry.dev-dependencies]
+pytest = "^5.2"
+black = "^21.5b2"
+flake8 = "^3.9.2"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.black]
+line-length = 79
+target-version = [ "py39",]
+
