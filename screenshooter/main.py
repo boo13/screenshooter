@@ -141,26 +141,29 @@ class ffmpegCommander:
         """=====================   FILTERS     ===============================
         SIMPLE FILTERGRAPHS
         https://ffmpeg.org/ffmpeg.html#toc-Simple-filtergraphs
+        
         Simple filtergraphs are those that have exactly one input and
         output, both of the same type. Simple filtergraphs are configured
         with the per-stream -filter option (with -vf and -af aliases for
         video and audio respectively).
-        ===================================================================
+        ======================================================================
         """
         # Decimate
         logger.debug("Adding Video Filter: Decimate")
         self.cmd.extend(["-vf", "mpdecimate,setpts=N/FRAME_RATE/TB"])
 
     def _append_output(self):
-        """Last part of the command is the output.
+        """ =====================    OUTPUT     ===============================
+        Last part of the command is the output.
 
-            We need to convert the Path to a String for
+        We need to convert the Path to a String for
         We need to convert the Path to a String for
         subprocess to make sense of it.
 
         Note the `%04d` is a variable ffmpeg uses to indicate an
         incraminting number with 4 integers, such as:
             `Image-0001.png', `Image-0002.png`, etc.
+        ======================================================================
         """
 
         file_name = PurePath(self.i).stem
