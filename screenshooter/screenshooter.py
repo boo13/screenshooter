@@ -19,6 +19,8 @@ np.seterr(divide="ignore")
 import cv2
 from loguru import logger
 
+from pymediainfo import MediaInfo
+
 # _________________________ Main Class  _________________________
 
 
@@ -49,6 +51,11 @@ class Screenshooter:
     def run(self, video_files):
         # For each of those videos we send a `subprocess` command
         for video in video_files:
+            # Media Info
+            media_info = MediaInfo.parse(video)
+            for track in media_info.tracks:
+                print(track)
+            # Send Command
             self.build_cmd(video)
 
     def build_input_video_list(self, input_video):
@@ -90,7 +97,7 @@ class Screenshooter:
         return file_list
 
     def get_video_files(self, input_dir):
-        """From a directory, return a list of video file paths, sorted based on common video file exstensions. 
+        """From a directory, return a list of video file paths, sorted based on common video file exstensions.
 
         Args:
             input_dir (Path): The folder in which we'll search for videos.
@@ -176,11 +183,12 @@ class Screenshooter:
 
         ouput_str = str(output_dir.joinpath(f"{file_name}_Screenshot-%04d.png"))
 
-        cmd: List[str] = [
-            "ffmpeg",
-            "-i",
-            str(input_video),
-        ]
+        # FFmpeg Commands
+        # -i = input
+        # input path as string
+        # -an = strip out audio (may be unnecessary)
+        # -sn = strip out subtitles (may be unnecessary)
+        cmd: List[str] = ["ffmpeg", "-i", str(input_video), "-an", "-sn"]
 
         # Set fps part of the command
         if self.fps:
@@ -220,7 +228,6 @@ class Screenshooter:
             if completed.returncode == 0:
                 logger.info("Capture complete...")
                 logger.info("Initiating cleanup... ")
-                # DeDuplicate(dataset=output_dir)
                 FileCleanup(dataset=output_dir)
 
                 self.timer.stop()
@@ -267,39 +274,43 @@ class FileCleanup:
         for image_path in self.image_paths:
             # Load image and make grayscale
             image = cv2.imread(image_path)
-            gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
-            (mean, blurry) = self.detect_blur_fft(gray)
-            text = "Blurry ({:.2f})" if blurry else "Not Blurry ({:.2f})"
-            text = text.format(mean)
+            # This 'if' statement prevents 'FileNotFoundError's by making sure we have an image
+            if image is not None:
 
-            # Not sure why the list is coming through as strings, so here I'm just converting it back to a Path object
-            img_path = Path(image_path)
-            img_name = img_path.name
+                gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
-            logger.debug(f"{img_name} is {text}")
+                (mean, blurry) = self.detect_blur_fft(gray)
+                text = "Blurry ({:.2f})" if blurry else "Not Blurry ({:.2f})"
+                text = text.format(mean)
 
-            reject = (
-                Path(self.dataset)
-                .joinpath("rejects")
-                .joinpath("blurry")
-                .joinpath(img_name)
-            )
-            select = Path(self.dataset).joinpath("selects").joinpath(img_name)
+                # Not sure why the list is coming through as strings, so here I'm just converting it back to a Path object
+                img_path = Path(image_path)
+                img_name = img_path.name
 
-            if blurry:
-                # Thanks to guidance from https://realpython.com/python-pathlib/
-                with reject.open(mode="xb") as f:
-                    f.write(img_path.read_bytes())
-                    img_path.unlink()
-            else:
-                with select.open(mode="xb") as f:
-                    f.write(img_path.read_bytes())
-                    img_path.unlink()
+                logger.debug(f"{img_name} is {text}")
+
+                reject = (
+                    Path(self.dataset)
+                    .joinpath("rejects")
+                    .joinpath("blurry")
+                    .joinpath(img_name)
+                )
+                select = Path(self.dataset).joinpath("selects").joinpath(img_name)
+
+                if blurry:
+                    # Thanks to guidance from https://realpython.com/python-pathlib/
+                    with reject.open(mode="xb") as f:
+                        f.write(img_path.read_bytes())
+                        img_path.unlink()
+                else:
+                    with select.open(mode="xb") as f:
+                        f.write(img_path.read_bytes())
+                        img_path.unlink()
 
     def detect_blur_fft(self, image, size=60, thresh=5, vis=False):
         """Find blurry images
-        
+
         Based on code from: https://www.pyimagesearch.com/2020/06/15/opencv-fast-fourier-transform-fft-for-blur-detection-in-images-and-video-streams/?__s=sizjqdkszyoej5pbk9sf
 
         Args:
