@@ -4,13 +4,15 @@
 # ======            ====== #
 # ======  Built-in  ====== #
 # ======            ====== #
+import os
 import sys
 from pathlib import Path
 
 # ======            ====== #
 # ======    Local   ====== #
 # ======            ====== #
-from .commands import get_video_info
+from .main import ShellCommand, get_video_file_paths, get_video_info
+from .commands import decimate
 from .process import ProcessVideo
 
 # ======            ====== #
@@ -64,6 +66,12 @@ except VersionNotFoundError as v:
     default="input",
     help="📺 The folder in which to find input videos..",
 )
+@click.option(
+    "--output",
+    "-o",
+    default="output",
+    help="The folder to output to",
+)
 @click.option("--fps", "-f", default=1.0, help="⏰ Frames per second (float)...")
 @click.option(
     "--overwrite",
@@ -89,27 +97,68 @@ except VersionNotFoundError as v:
     is_flag=True,
     help="Print debug messages",
 )
+@click.option(
+    "--video-info",
+    is_flag=True,
+    help="Print info for input video",
+)
+@click.option(
+    "--audio-info",
+    is_flag=True,
+    help="Print info for input audio",
+)
 @click_config_file.configuration_option()
-def CLI(input, fps, overwrite, postprocess, version, debug):
+def CLI(
+    input, output, fps, overwrite, postprocess, version, debug, video_info, audio_info
+):
     """
     The main function for parsing out the initial click (CLI) inputs.
 
     Click gets the file folder and desired output options for the
     screenshooter command, then sends it on its way.
     """
-
+    # Display Version
     if version:
-        get_video_info(input)
+        # get_video_info(input)
+        click.echo(f"Screenshooter Vers: {__version__}")
+        sys.exit()
 
-    else:
-        request = {
-            "file": {input},
-            "fps": {fps},
-            "overwrite": {overwrite},
-            "post-process": {postprocess},
-        }
+    # Directory
+    root_dir = Path(input)
+    if not root_dir.is_dir():
+        print("The specified root directory doesn't exist")
+        sys.exit()
 
-        if debug:
-            logger.debug(f"Request: {request}")
+    output_dir = Path(output)
+    if not output_dir.is_dir():
+        print("The specified root directory doesn't exist")
+        sys.exit()
 
-        ProcessVideo(input, fps, overwrite, postprocess)
+    # Get the video files
+    videos = get_video_file_paths(root_dir)
+
+    # Request to send
+    request = {
+        "file": {root_dir},
+        "fps": {fps},
+        "overwrite": {overwrite},
+        "post-process": {postprocess},
+    }
+
+    # Debug
+    click.echo("Debug mode is %s" % ("on" if debug else "off"))
+    if debug:
+        logger.debug(f"Request: {request}")
+        logger.debug(f"Video File List: {videos}")
+
+    # Send the request
+    # ProcessVideo(input, fps, overwrite, postprocess)
+    for v in videos:
+
+        # Video Info
+        if video_info:
+            get_video_info(v, audio_info)
+            # sys.exit()
+        else:
+            ShellCommand(v, output_dir)
+        # decimate(v, "output")
