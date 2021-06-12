@@ -11,10 +11,7 @@ from pathlib import Path
 # ======            ====== #
 # ======    Local   ====== #
 # ======            ====== #
-from .main import ShellCommand, get_video_file_paths, get_video_info, ffmpegCommander
-
-# from .commands import decimate
-from .process import ProcessVideo
+from .main import get_video_file_paths, get_video_info, ffmpegCommander
 
 # ======            ====== #
 # ======    PyPi    ====== #

@@ -80,6 +80,51 @@ def get_video_info(video, audio=False):
 
 
 # =========================================================================== #
+# _____________________       Make Output Dirs       ________________________ #
+# =========================================================================== #
+def make_output_dirs(fileName):
+    """[summary]
+
+    Args:
+        fileName ([type]): [description]
+
+    Returns:
+        Path: output_dir
+    """
+    output_dir = self.base_dir.joinpath("output")
+
+    new_dir = output_dir.joinpath(fileName)
+    # selects_sub_dir = new_dir.joinpath("selects")
+    # rejects_sub_dir = new_dir.joinpath("rejects")
+    # dedeuplicate_sub_sub_dir = rejects_sub_dir.joinpath("dedeuplicate")
+    # blurry_sub_sub_dir = rejects_sub_dir.joinpath("blurry")
+
+    try:
+        Path.mkdir(new_dir)
+        # Path.mkdir(selects_sub_dir)
+        # Path.mkdir(rejects_sub_dir)
+        # Path.mkdir(dedeuplicate_sub_sub_dir)
+        # Path.mkdir(blurry_sub_sub_dir)
+        output_dir = output_dir.joinpath(fileName)
+
+    except FileNotFoundError as e:
+        logger.debug("A missing parent folder - problem in the path.")
+        exit(e)
+
+    except FileExistsError as e:
+        logger.debug("The output folder already exists")
+
+        if self.overwrite:
+            Path.mkdir(new_dir, exist_ok=True)
+            output_dir = output_dir.joinpath(fileName)
+        else:
+            logger.info("Exiting...")
+            exit(e)
+
+    # return (output_dir, selects_sub_dir, rejects_sub_dir)
+
+
+# =========================================================================== #
 # ______________________ Subprocess > Shell Command   _______________________ #
 # =========================================================================== #
 
@@ -141,7 +186,7 @@ class ffmpegCommander:
         """=====================   FILTERS     ===============================
         SIMPLE FILTERGRAPHS
         https://ffmpeg.org/ffmpeg.html#toc-Simple-filtergraphs
-        
+
         Simple filtergraphs are those that have exactly one input and
         output, both of the same type. Simple filtergraphs are configured
         with the per-stream -filter option (with -vf and -af aliases for
@@ -153,7 +198,7 @@ class ffmpegCommander:
         self.cmd.extend(["-vf", "mpdecimate,setpts=N/FRAME_RATE/TB"])
 
     def _append_output(self):
-        """ =====================    OUTPUT     ===============================
+        """=====================    OUTPUT     ===============================
         Last part of the command is the output.
 
         We need to convert the Path to a String for
@@ -165,8 +210,29 @@ class ffmpegCommander:
             `Image-0001.png', `Image-0002.png`, etc.
         ======================================================================
         """
-
+        # Get the video filename (minus the extension)
         file_name = PurePath(self.i).stem
+
+        # Make output directory, using the name of the video file
+        new_dir = self.o.joinpath(file_name)
+
+        try:
+            Path.mkdir(new_dir)
+            self.o = self.o.joinpath(file_name)
+
+        except FileNotFoundError as e:
+            logger.error("A missing parent folder - problem in the path.")
+            exit(e)
+
+        # except FileExistsError as e:
+        #     logger.debug("The output folder already exists")
+
+        #     if self.overwrite:
+        #         Path.mkdir(new_dir, exist_ok=True)
+        #         output_dir = output_dir.joinpath(fileName)
+        #     else:
+        #         logger.info("Exiting...")
+        #         exit(e)
 
         # Convert Path to string
         output_str = str(self.o.joinpath(f"{file_name}-%04d.png"))

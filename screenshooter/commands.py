@@ -67,7 +67,8 @@ def get_thumbnail():
 
 
 # Get FPS
-# From here: https://stackoverflow.com/questions/27792934/get-video-fps-using-ffprobe
+# From here: 
+# https://stackoverflow.com/questions/27792934/get-video-fps-using-ffprobe
 # ffprobe -v error -select_streams v -of default=noprint_wrappers=1:nokey=1 -show_entries stream=r_frame_rate file.mp4
 
 

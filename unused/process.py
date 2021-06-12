@@ -58,80 +58,80 @@ class ProcessVideo:
 
         return video_file_list
 
-    def get_video_files(self, input_dir):
-        """From a directory, return a list of video file paths, sorted based on common video file exstensions.
+    # def get_video_files(self, input_dir):
+    #     """From a directory, return a list of video file paths, sorted based on common video file exstensions.
 
-        Args:
-            input_dir (Path): The folder in which we'll search for videos.
+    #     Args:
+    #         input_dir (Path): The folder in which we'll search for videos.
 
-        Returns:
-            List: Video file paths found in directory
-        """
+    #     Returns:
+    #         List: Video file paths found in directory
+    #     """
 
-        # Get all files in folders and sub-folders
-        files = self.get_all_files_in_dir(input_dir)
+    #     # Get all files in folders and sub-folders
+    #     files = self.get_all_files_in_dir(input_dir)
 
-        vid_file_types = (
-            ".avi",
-            ".mp4",
-            ".mkv",
-            ".webm",
-            ".mpeg",
-            ".ogg",
-            ".m4v",
-            ".wmv",
-            ".mov",
-            ".flv",
-        )
+    #     vid_file_types = (
+    #         ".avi",
+    #         ".mp4",
+    #         ".mkv",
+    #         ".webm",
+    #         ".mpeg",
+    #         ".ogg",
+    #         ".m4v",
+    #         ".wmv",
+    #         ".mov",
+    #         ".flv",
+    #     )
 
-        video_files = []
+    #     video_files = []
 
-        for f in files:
-            if f.suffix in vid_file_types:
-                video_files.append(f)
+    #     for f in files:
+    #         if f.suffix in vid_file_types:
+    #             video_files.append(f)
 
-        return video_files
+    #     return video_files
 
-    def make_output_dirs(self, fileName):
-        """[summary]
+    # def make_output_dirs(self, fileName):
+    #     """[summary]
 
-        Args:
-            fileName ([type]): [description]
+    #     Args:
+    #         fileName ([type]): [description]
 
-        Returns:
-            Path: output_dir
-        """
-        output_dir = self.base_dir.joinpath("output")
+    #     Returns:
+    #         Path: output_dir
+    #     """
+    #     output_dir = self.base_dir.joinpath("output")
 
-        new_dir = output_dir.joinpath(fileName)
-        selects_sub_dir = new_dir.joinpath("selects")
-        rejects_sub_dir = new_dir.joinpath("rejects")
-        dedeuplicate_sub_sub_dir = rejects_sub_dir.joinpath("dedeuplicate")
-        blurry_sub_sub_dir = rejects_sub_dir.joinpath("blurry")
+    #     new_dir = output_dir.joinpath(fileName)
+    #     selects_sub_dir = new_dir.joinpath("selects")
+    #     rejects_sub_dir = new_dir.joinpath("rejects")
+    #     dedeuplicate_sub_sub_dir = rejects_sub_dir.joinpath("dedeuplicate")
+    #     blurry_sub_sub_dir = rejects_sub_dir.joinpath("blurry")
 
-        try:
-            Path.mkdir(new_dir)
-            Path.mkdir(selects_sub_dir)
-            Path.mkdir(rejects_sub_dir)
-            Path.mkdir(dedeuplicate_sub_sub_dir)
-            Path.mkdir(blurry_sub_sub_dir)
-            output_dir = output_dir.joinpath(fileName)
+    #     try:
+    #         Path.mkdir(new_dir)
+    #         Path.mkdir(selects_sub_dir)
+    #         Path.mkdir(rejects_sub_dir)
+    #         Path.mkdir(dedeuplicate_sub_sub_dir)
+    #         Path.mkdir(blurry_sub_sub_dir)
+    #         output_dir = output_dir.joinpath(fileName)
 
-        except FileNotFoundError as e:
-            logger.debug("A missing parent folder - problem in the path.")
-            exit(e)
+    #     except FileNotFoundError as e:
+    #         logger.debug("A missing parent folder - problem in the path.")
+    #         exit(e)
 
-        except FileExistsError as e:
-            logger.debug("The output folder already exists")
+    #     except FileExistsError as e:
+    #         logger.debug("The output folder already exists")
 
-            if self.overwrite:
-                Path.mkdir(new_dir, exist_ok=True)
-                output_dir = output_dir.joinpath(fileName)
-            else:
-                logger.info("Exiting...")
-                exit(e)
+    #         if self.overwrite:
+    #             Path.mkdir(new_dir, exist_ok=True)
+    #             output_dir = output_dir.joinpath(fileName)
+    #         else:
+    #             logger.info("Exiting...")
+    #             exit(e)
 
-        return (output_dir, selects_sub_dir, rejects_sub_dir)
+    #     return (output_dir, selects_sub_dir, rejects_sub_dir)
 
     # def build_cmd(self, input_video):
     #     """Build the Subprocess command and send it to `send_subprocess_cmd`"""
