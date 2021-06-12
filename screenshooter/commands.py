@@ -22,24 +22,6 @@ from loguru import logger
 # _________________________   Commands     _________________________ #
 # ================================================================== #
 
-# DECIMATE
-#
-# ffmpeg -i {FILE} -vf mpdecimate,setpts=N/FRAME_RATE/TB -an {OUT}
-
-
-def decimate(input_video, output=None):
-    """Remove the "Dead frames" (duplicate frames) in a video
-
-    Args:
-        input_video ([type]): [description]
-    """
-
-    if output is None:
-        output = f"converted-{input_video}"
-    print(input_video)
-
-    cmd = f"ffmpeg -i {input_video} -vf mpdecimate,setpts=N/FRAME_RATE/TB -an {output}"
-    # cmd()
 
 
 def get_codecs():

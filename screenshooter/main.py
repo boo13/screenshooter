@@ -1,6 +1,6 @@
-# ================================================================== #
-# _________________________    Imports     _________________________ #
-# ================================================================== #
+# =========================================================================== #
+# _____________________________    Imports     ______________________________ #
+# =========================================================================== #
 # ======            ====== #
 # ======  Built-in  ====== #
 # ======            ====== #
@@ -20,9 +20,10 @@ import subprocess
 from loguru import logger
 from pymediainfo import MediaInfo
 
-# ================================================================== #
-# _________________      Get Video Files       _____________________ #
-# ================================================================== #
+
+# =========================================================================== #
+# ______________________      Get Video Files       _________________________ #
+# =========================================================================== #
 def get_video_file_paths(input_dir):
     """From a directory, return a list of video file paths, sorted based
     on commonly used video file exstensions.
@@ -37,7 +38,7 @@ def get_video_file_paths(input_dir):
     # Get all files in folders and sub-folders
     # files = get_all_files_in_dir(input_dir)
 
-    vid_file_types = (
+    VIDEO_FILE_TYPES = (
         ".avi",
         ".mp4",
         ".mkv",
@@ -56,15 +57,15 @@ def get_video_file_paths(input_dir):
     # entries = sorted(entries, key=lambda entry: entry.is_file())
 
     for f in entries:
-        if f.suffix in vid_file_types:
+        if f.suffix in VIDEO_FILE_TYPES:
             video_files.append(f)
 
     return video_files
 
 
-# ================================================================== #
-# _________________       Get Media Info       _____________________ #
-# ================================================================== #
+# =========================================================================== #
+# ______________________       Get Media Info       _________________________ #
+# =========================================================================== #
 def get_video_info(video, audio=False):
     for track in MediaInfo.parse(video).tracks:
         if track.track_type == "Video":
@@ -73,76 +74,119 @@ def get_video_info(video, audio=False):
             logger.info(f"Video Format: {track.format}")
             logger.info(f"Video Duration: {track.other_duration[4]}")
         elif track.track_type == "Audio":
-            if audio:    
+            if audio:
                 logger.info("Audio Track data:")
                 pprint(track.to_data())
 
 
-# ================================================================== #
-# __________________ Subprocess > Shell Command  ___________________ #
-# ================================================================== #
-class ShellCommand:
+# =========================================================================== #
+# ______________________ Subprocess > Shell Command   _______________________ #
+# =========================================================================== #
+
+
+class ffmpegCommander:
+    """[summary]"""
+
     def __init__(
         self,
-        input_vid,
-        output_dir,
-        overwrite=False,
-        captureFreq=1,
-        postprocess=False,
-        verbose=True,
+        input,
+        output,
+        decimate=False,
+        strip_audio=True,
+        strip_subtitles=True,
+        verbose=False,
     ) -> None:
+        self.i = input
+        self.o = output
+        self.d = decimate
+        self.s_a = strip_audio
+        self.s_s = strip_subtitles
+        self.verbose = verbose
 
+        # Function timer, just some FYI
         self.timer = Timer()
 
-        self.build_cmd(input_vid, output_dir, captureFreq)
+        # Start the FFmpeg Command
+        self.cmd: List[str] = ["ffmpeg"]
 
-        # if postprocess:
-        #     print(postprocess)
+        # Do the thing...
+        self._cmd_builder()
 
-    def build_cmd(self, input_vid, output_dir, captureFreq):
-        """Build the Subprocess command and send it to `send_subprocess_cmd`"""
+    def _cmd_builder(self):
+        # Input
+        self._set_input()
 
-        # __________________ Set Output & Filename ___________________
-        file_name = PurePath(input_vid).stem
-        # (output_dir, selects_dir, rejects_dir) = self.make_output_dirs(file_name)
+        # Filters
+        if self.d:
+            self._append_video_filters()
 
-        logger.debug("Building command...")
-        logger.debug(f"Output dir: {output_dir}")
-        logger.debug(f"File Name: {file_name}")
+        # Flags
+        if self.s_a:
+            # -an = strip out audio (may be unnecessary)
+            self.cmd.append("-an")
 
-        ouput_str = str(output_dir.joinpath(f"{file_name}_Screenshot-%04d.png"))
+        if self.s_s:
+            # -sn = strip out subtitles (may be unnecessary)
+            self.cmd.append("-sn")
 
-        # FFmpeg Commands
+        # Output
+        self._append_output()
+
+    def _set_input(self):
         # -i = input
         # input path as string
-        # -an = strip out audio (may be unnecessary)
-        # -sn = strip out subtitles (may be unnecessary)
-        cmd: List[str] = ["ffmpeg", "-i", str(input_vid), "-an", "-sn"]
+        self.cmd.extend(["-i", str(self.i)])
 
-        # Set fps part of the command
-        if captureFreq:
-            cmd.append("-vf")
-            # cmd.append(f"fps=1")
-            cmd.append(f"fps=1/{captureFreq}")
+    def _append_video_filters(self):
+        """=====================   FILTERS     ===============================
+        SIMPLE FILTERGRAPHS
+        https://ffmpeg.org/ffmpeg.html#toc-Simple-filtergraphs
+        Simple filtergraphs are those that have exactly one input and
+        output, both of the same type. Simple filtergraphs are configured
+        with the per-stream -filter option (with -vf and -af aliases for
+        video and audio respectively).
+        ===================================================================
+        """
+        # Decimate
+        logger.debug("Adding Video Filter: Decimate")
+        self.cmd.extend(["-vf", "mpdecimate,setpts=N/FRAME_RATE/TB"])
 
-        # Last part of the command
-        cmd.append(ouput_str)
+    def _append_output(self):
+        """Last part of the command is the output.
 
-        self.send_cmd(cmd, output_dir)
+            We need to convert the Path to a String for
+        We need to convert the Path to a String for
+        subprocess to make sense of it.
 
-    def send_cmd(self, cmd, output_dir):
+        Note the `%04d` is a variable ffmpeg uses to indicate an
+        incraminting number with 4 integers, such as:
+            `Image-0001.png', `Image-0002.png`, etc.
+        """
+
+        file_name = PurePath(self.i).stem
+
+        # Convert Path to string
+        output_str = str(self.o.joinpath(f"{file_name}-%04d.png"))
+
+        # Append it...
+        self.cmd.append(output_str)
+
+        # And send it...
+        self.send()
+
+    def send(self):
         """Sends command to the shell via `subprocess`
 
         Args:
             cmd (List[str]): [description]
         """
 
-        logger.debug(f"Sending subprocess command: {cmd}")
+        logger.debug(f"Sending subprocess command: {self.cmd}")
         self.timer.start()
 
         try:
             completed = subprocess.run(
-                cmd,
+                self.cmd,
                 stdin=subprocess.PIPE,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
@@ -157,7 +201,7 @@ class ShellCommand:
                 # Turned off FileCleanup temporarily
 
                 self.timer.stop()
-                logger.info("🌟🌈 Complete! ⭐️✨\n")
+                logger.info("✨🌟  Complete! ⭐️✨\n")
             else:
                 self.timer.stop()
                 logger.info(f"🎃 Return code: {completed.returncode}\n")

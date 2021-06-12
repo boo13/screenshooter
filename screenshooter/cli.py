@@ -11,8 +11,9 @@ from pathlib import Path
 # ======            ====== #
 # ======    Local   ====== #
 # ======            ====== #
-from .main import ShellCommand, get_video_file_paths, get_video_info
-from .commands import decimate
+from .main import ShellCommand, get_video_file_paths, get_video_info, ffmpegCommander
+
+# from .commands import decimate
 from .process import ProcessVideo
 
 # ======            ====== #
@@ -107,9 +108,23 @@ except VersionNotFoundError as v:
     is_flag=True,
     help="Print info for input audio",
 )
+@click.option(
+    "--decimate",
+    is_flag=True,
+    help="Decimate the video",
+)
 @click_config_file.configuration_option()
 def CLI(
-    input, output, fps, overwrite, postprocess, version, debug, video_info, audio_info
+    input,
+    output,
+    fps,
+    overwrite,
+    postprocess,
+    version,
+    debug,
+    video_info,
+    audio_info,
+    decimate,
 ):
     """
     The main function for parsing out the initial click (CLI) inputs.
@@ -146,8 +161,8 @@ def CLI(
     }
 
     # Debug
-    click.echo("Debug mode is %s" % ("on" if debug else "off"))
     if debug:
+        logger.debug(f"Debug Mode is ON")
         logger.debug(f"Request: {request}")
         logger.debug(f"Video File List: {videos}")
 
@@ -158,7 +173,5 @@ def CLI(
         # Video Info
         if video_info:
             get_video_info(v, audio_info)
-            # sys.exit()
         else:
-            ShellCommand(v, output_dir)
-        # decimate(v, "output")
+            ffmpegCommander(v, output_dir, decimate=decimate)
