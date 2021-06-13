@@ -11,7 +11,8 @@ from pathlib import Path
 # ======            ====== #
 # ======    Local   ====== #
 # ======            ====== #
-from .main import get_video_file_paths, get_video_info, ffmpegCommander
+from .get_inputs import get_video_file_paths
+from .main import get_video_info, ffmpegCommander
 
 # ======            ====== #
 # ======    PyPi    ====== #
@@ -70,7 +71,7 @@ except VersionNotFoundError as v:
     default="output",
     help="The folder to output to",
 )
-@click.option("--fps", "-f", default=1.0, help="⏰ Frames per second (float)...")
+@click.option("--fps", "-f", default=1.0, help="⏰  Frames per second (float)...")
 @click.option(
     "--overwrite",
     "-o",
@@ -81,7 +82,7 @@ except VersionNotFoundError as v:
     "--postprocess",
     "-p",
     is_flag=True,
-    help="Run the post-processing scripts to eliminate duplicates, blurry, etc. images. [default: False]",
+    help="Run post-processing to eliminate duplicates, blurry, etc.",
 )
 @click.option(
     "--version",
