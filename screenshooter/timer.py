@@ -46,6 +46,11 @@ class Timer:
         elapsed_time = time.perf_counter() - self._start_time
         self._start_time = None
 
+        if elapsed_time > 60:
+            m = elapsed_time / 60
+            s = elapsed_time % 60
+            elapsed_time = f"{m}:{s}"
+
         # Report elapsed time
         if self.logger:
             self.logger(self.text.format(elapsed_time))

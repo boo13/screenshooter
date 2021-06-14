@@ -19,7 +19,7 @@ from .timer import Timer
 import subprocess
 from loguru import logger
 from pymediainfo import MediaInfo
-
+from yaspin import yaspin, Spinner
 
 # =========================================================================== #
 # ______________________       Get Media Info       _________________________ #
@@ -94,6 +94,11 @@ class ffmpegCommander:
         self,
         input,
         output,
+        ss=False,
+        ss_h=0,
+        ss_m=0,
+        ss_s=0,
+        ss_mi=0,
         decimate=False,
         strip_audio=True,
         strip_subtitles=True,
@@ -105,6 +110,10 @@ class ffmpegCommander:
         self.s_a = strip_audio
         self.s_s = strip_subtitles
         self.verbose = verbose
+
+        # Seek start
+        if ss:
+            self._seek_start(ss_h, ss_m, ss_s, ss_mi)
 
         # Function timer, just some FYI
         self.timer = Timer()
@@ -134,6 +143,9 @@ class ffmpegCommander:
 
         # Output
         self._append_output()
+
+    def _seek_start(self, hours, mins, secs, mils):
+        self.cmd.extend(["-ss", f"{hours}:{mins}:{secs}.{mils}"])
 
     def _set_input(self):
         # -i = input
@@ -212,14 +224,20 @@ class ffmpegCommander:
         self.timer.start()
 
         try:
-            completed = subprocess.run(
-                self.cmd,
-                stdin=subprocess.PIPE,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                check=True,
-                shell=False,
+            # Compose new spinners with custom sequence and interval value
+            sp = Spinner(
+                ["😸", ". 😹", ".. 😼", "... 😻", ".... 😾", "..... 😿", "...... 😽", "....... 🙀"], 500
             )
+
+            with yaspin(sp, text="Cats at work!!!"):  # cats consuming code :)
+                completed = subprocess.run(
+                    self.cmd,
+                    stdin=subprocess.PIPE,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    check=True,
+                    shell=False,
+                )
 
             if completed.returncode == 0:
                 logger.info("Capture complete...")
